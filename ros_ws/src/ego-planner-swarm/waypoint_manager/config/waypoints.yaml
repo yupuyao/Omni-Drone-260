@@ -1,0 +1,23 @@
+# Waypoints configuration for waypoint_manager
+# This file defines the predefined waypoints to be published in sequence
+
+waypoint_manager:
+  ros__parameters:
+    waypoints:
+      count: 5
+      point0:
+        x: 3.0
+        y: 0.0
+        z: 2.0
+      point1:
+        x: 3.0
+        y: -3.0
+        z: 2.0
+      point2:
+        x: 0.0
+        y: -3.0
+        z: 2.0
+      point3:
+        x: 0.0
+        y: 0.0
+        z: 2.0

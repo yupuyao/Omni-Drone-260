@@ -1,0 +1,181 @@
+[0.028s] Invoking command in '/home/orangepi/ros_ws/src/build/px4_ros_com': AMENT_PREFIX_PATH=/home/orangepi/ros_ws/src/install/px4_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/orangepi/ros_ws/src/install/px4_msgs:/home/orangepi/ros_ws/install/slam_cartographer:/home/orangepi/ros_ws/install/oradar_lidar:/home/orangepi/install/slam_cartographer:/home/orangepi/install/oradar_lidar:/opt/ros/humble LD_LIBRARY_PATH=/home/orangepi/ros_ws/src/install/px4_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/orangepi/ros_ws/src/install/px4_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake /home/orangepi/ros_ws/src/px4_ros_com -DCMAKE_INSTALL_PREFIX=/home/orangepi/ros_ws/src/install/px4_ros_com
+[0.216s] -- The C compiler identification is GNU 11.4.0
+[0.395s] -- The CXX compiler identification is GNU 11.4.0
+[0.424s] -- Detecting C compiler ABI info
+[0.640s] -- Detecting C compiler ABI info - done
+[0.678s] -- Check for working C compiler: /usr/bin/cc - skipped
+[0.679s] -- Detecting C compile features
+[0.681s] -- Detecting C compile features - done
+[0.691s] -- Detecting CXX compiler ABI info
+[0.928s] -- Detecting CXX compiler ABI info - done
+[0.959s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[0.961s] -- Detecting CXX compile features
+[0.963s] -- Detecting CXX compile features - done
+[0.972s] -- Found ament_cmake: 1.3.11 (/opt/ros/humble/share/ament_cmake/cmake)
+[1.723s] -- Found Python3: /usr/bin/python3 (found version "3.10.12") found components: Interpreter 
+[1.895s] -- Found builtin_interfaces: 1.2.1 (/opt/ros/humble/share/builtin_interfaces/cmake)
+[1.944s] -- Found rosidl_generator_c: 3.1.6 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+[1.951s] -- Found rosidl_adapter: 3.1.6 (/opt/ros/humble/share/rosidl_adapter/cmake)
+[1.962s] -- Found rosidl_generator_cpp: 3.1.6 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+[1.979s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[2.001s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[2.022s] -- Found eigen3_cmake_module: 0.1.1 (/opt/ros/humble/share/eigen3_cmake_module/cmake)
+[2.033s] -- Found Eigen3: TRUE (found version "3.4.0") 
+[2.035s] -- Found geometry_msgs: 4.8.0 (/opt/ros/humble/share/geometry_msgs/cmake)
+[2.074s] -- Found px4_msgs: 2.0.1 (/home/orangepi/ros_ws/src/install/px4_msgs/share/px4_msgs/cmake)
+[2.097s] -- Found rclcpp: 16.0.12 (/opt/ros/humble/share/rclcpp/cmake)
+[2.181s] -- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)
+[2.186s] -- Found rmw_fastrtps_cpp: 6.2.7 (/opt/ros/humble/share/rmw_fastrtps_cpp/cmake)
+[2.376s] -- Found OpenSSL: /usr/lib/aarch64-linux-gnu/libcrypto.so (found version "3.0.2")  
+[2.442s] -- Found FastRTPS: /opt/ros/humble/include  
+[2.520s] -- Using RMW implementation 'rmw_fastrtps_cpp' as default
+[2.540s] -- Looking for pthread.h
+[2.751s] -- Looking for pthread.h - found
+[2.752s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+[2.979s] -- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+[2.982s] -- Found Threads: TRUE  
+[3.116s] -- Found sensor_msgs: 4.8.0 (/opt/ros/humble/share/sensor_msgs/cmake)
+[3.149s] -- Found rclpy: 3.3.16 (/opt/ros/humble/share/rclpy/cmake)
+[3.166s] -- Found ament_lint_auto: 0.12.12 (/opt/ros/humble/share/ament_lint_auto/cmake)
+[3.403s] -- Added test 'copyright' to check source files copyright and LICENSE
+[3.409s] -- Added test 'cppcheck' to perform static code analysis on C / C++ code
+[3.410s] -- Configured cppcheck include dirs: /home/orangepi/ros_ws/src/px4_ros_com/include;$<BUILD_INTERFACE:/home/orangepi/ros_ws/src/px4_ros_com/include/px4_ros_com>
+[3.410s] -- Configured cppcheck exclude dirs and/or files: 
+[3.419s] -- Added test 'cpplint' to check C / C++ code against the Google style
+[3.419s] -- Configured cpplint exclude dirs and/or files: 
+[3.421s] -- Added test 'flake8' to check Python code syntax and style conventions
+[3.423s] -- Added test 'lint_cmake' to check CMake code style
+[3.425s] -- Added test 'pep257' to check Python code against some of the docstring style conventions in PEP 257
+[3.430s] -- Added test 'uncrustify' to check C / C++ code style
+[3.430s] -- Configured uncrustify additional arguments: 
+[3.431s] -- Added test 'xmllint' to check XML markup files
+[3.436s] -- Configuring done
+[3.470s] -- Generating done
+[3.484s] -- Build files have been written to: /home/orangepi/ros_ws/src/build/px4_ros_com
+[3.510s] Invoked command in '/home/orangepi/ros_ws/src/build/px4_ros_com' returned '0': AMENT_PREFIX_PATH=/home/orangepi/ros_ws/src/install/px4_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/orangepi/ros_ws/src/install/px4_msgs:/home/orangepi/ros_ws/install/slam_cartographer:/home/orangepi/ros_ws/install/oradar_lidar:/home/orangepi/install/slam_cartographer:/home/orangepi/install/oradar_lidar:/opt/ros/humble LD_LIBRARY_PATH=/home/orangepi/ros_ws/src/install/px4_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/orangepi/ros_ws/src/install/px4_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake /home/orangepi/ros_ws/src/px4_ros_com -DCMAKE_INSTALL_PREFIX=/home/orangepi/ros_ws/src/install/px4_ros_com
+[3.516s] Invoking command in '/home/orangepi/ros_ws/src/build/px4_ros_com': AMENT_PREFIX_PATH=/home/orangepi/ros_ws/src/install/px4_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/orangepi/ros_ws/src/install/px4_msgs:/home/orangepi/ros_ws/install/slam_cartographer:/home/orangepi/ros_ws/install/oradar_lidar:/home/orangepi/install/slam_cartographer:/home/orangepi/install/oradar_lidar:/opt/ros/humble LD_LIBRARY_PATH=/home/orangepi/ros_ws/src/install/px4_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/orangepi/ros_ws/src/install/px4_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --build /home/orangepi/ros_ws/src/build/px4_ros_com -- -j8 -l8
+[3.661s] [ 25%] [32mBuilding CXX object CMakeFiles/frame_transforms.dir/src/lib/frame_transforms.cpp.o[0m
+[3.661s] [ 25%] [32mBuilding CXX object CMakeFiles/offboard_control_srv.dir/src/examples/offboard/offboard_control_srv.cpp.o[0m
+[3.661s] [ 25%] [32mBuilding CXX object CMakeFiles/debug_vect_advertiser.dir/src/examples/advertisers/debug_vect_advertiser.cpp.o[0m
+[3.674s] [ 33%] [32mBuilding CXX object CMakeFiles/vehicle_gps_position_listener.dir/src/examples/listeners/vehicle_gps_position_listener.cpp.o[0m
+[3.677s] [ 41%] [32mBuilding CXX object CMakeFiles/sensor_combined_listener.dir/src/examples/listeners/sensor_combined_listener.cpp.o[0m
+[3.685s] [ 50%] [32mBuilding CXX object CMakeFiles/offboard_control.dir/src/examples/offboard/offboard_control.cpp.o[0m
+[3.714s] [ 50%] Built target ament_cmake_python_copy_px4_ros_com
+[4.153s] running egg_info
+[4.155s] creating px4_ros_com.egg-info
+[4.173s] writing px4_ros_com.egg-info/PKG-INFO
+[4.174s] writing dependency_links to px4_ros_com.egg-info/dependency_links.txt
+[4.175s] writing top-level names to px4_ros_com.egg-info/top_level.txt
+[4.175s] writing manifest file 'px4_ros_com.egg-info/SOURCES.txt'
+[4.233s] reading manifest file 'px4_ros_com.egg-info/SOURCES.txt'
+[4.235s] writing manifest file 'px4_ros_com.egg-info/SOURCES.txt'
+[4.337s] [ 50%] Built target ament_cmake_python_build_px4_ros_com_egg
+[7.086s] In file included from [01m[K/usr/include/eigen3/Eigen/Core:214[m[K,
+[7.086s]                  from [01m[K/usr/include/eigen3/Eigen/Dense:1[m[K,
+[7.087s]                  from [01m[K/usr/include/eigen3/Eigen/Eigen:1[m[K,
+[7.087s]                  from [01m[K/home/orangepi/ros_ws/src/px4_ros_com/include/px4_ros_com/frame_transforms.h:45[m[K,
+[7.088s]                  from [01m[K/home/orangepi/ros_ws/src/px4_ros_com/src/lib/frame_transforms.cpp:41[m[K:
+[7.089s] [01m[K/usr/include/eigen3/Eigen/src/Core/arch/NEON/PacketMath.h:[m[K In function ‘[01m[KPacket Eigen::internal::pload(const typename Eigen::internal::unpacket_traits<T>::type*) [with Packet = Eigen::internal::eigen_packet_wrapper<int, 2>; typename Eigen::internal::unpacket_traits<T>::type = signed char][m[K’:
+[7.089s] [01m[K/usr/include/eigen3/Eigen/src/Core/arch/NEON/PacketMath.h:1671:9:[m[K [01;35m[Kwarning: [m[K‘[01m[Kvoid* memcpy(void*, const void*, size_t)[m[K’ copying an object of non-trivial type ‘[01m[KEigen::internal::Packet4c[m[K’ {aka ‘[01m[Kstruct Eigen::internal::eigen_packet_wrapper<int, 2>[m[K’} from an array of ‘[01m[Kconst int8_t[m[K’ {aka ‘[01m[Kconst signed char[m[K’} [[01;35m[K-Wclass-memaccess[m[K]
+[7.090s]  1671 |   [01;35m[Kmemcpy(&res, from, sizeof(Packet4c))[m[K;
+[7.090s]       |   [01;35m[K~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+[7.091s] In file included from [01m[K/usr/include/eigen3/Eigen/Core:172[m[K,
+[7.092s]                  from [01m[K/usr/include/eigen3/Eigen/Dense:1[m[K,
+[7.092s]                  from [01m[K/usr/include/eigen3/Eigen/Eigen:1[m[K,
+[7.093s]                  from [01m[K/home/orangepi/ros_ws/src/px4_ros_com/include/px4_ros_com/frame_transforms.h:45[m[K,
+[7.093s]                  from [01m[K/home/orangepi/ros_ws/src/px4_ros_com/src/lib/frame_transforms.cpp:41[m[K:
+[7.093s] [01m[K/usr/include/eigen3/Eigen/src/Core/GenericPacketMath.h:159:8:[m[K [01;36m[Knote: [m[K‘[01m[KEigen::internal::Packet4c[m[K’ {aka ‘[01m[Kstruct Eigen::internal::eigen_packet_wrapper<int, 2>[m[K’} declared here
+[7.094s]   159 | struct [01;36m[Keigen_packet_wrapper[m[K
+[7.094s]       |        [01;36m[K^~~~~~~~~~~~~~~~~~~~[m[K
+[7.095s] In file included from [01m[K/usr/include/eigen3/Eigen/Core:214[m[K,
+[7.095s]                  from [01m[K/usr/include/eigen3/Eigen/Dense:1[m[K,
+[7.096s]                  from [01m[K/usr/include/eigen3/Eigen/Eigen:1[m[K,
+[7.096s]                  from [01m[K/home/orangepi/ros_ws/src/px4_ros_com/include/px4_ros_com/frame_transforms.h:45[m[K,
+[7.096s]                  from [01m[K/home/orangepi/ros_ws/src/px4_ros_com/src/lib/frame_transforms.cpp:41[m[K:
+[7.097s] [01m[K/usr/include/eigen3/Eigen/src/Core/arch/NEON/PacketMath.h:[m[K In function ‘[01m[KPacket Eigen::internal::ploadu(const typename Eigen::internal::unpacket_traits<T>::type*) [with Packet = Eigen::internal::eigen_packet_wrapper<int, 2>; typename Eigen::internal::unpacket_traits<T>::type = signed char][m[K’:
+[7.097s] [01m[K/usr/include/eigen3/Eigen/src/Core/arch/NEON/PacketMath.h:1716:9:[m[K [01;35m[Kwarning: [m[K‘[01m[Kvoid* memcpy(void*, const void*, size_t)[m[K’ copying an object of non-trivial type ‘[01m[KEigen::internal::Packet4c[m[K’ {aka ‘[01m[Kstruct Eigen::internal::eigen_packet_wrapper<int, 2>[m[K’} from an array of ‘[01m[Kconst int8_t[m[K’ {aka ‘[01m[Kconst signed char[m[K’} [[01;35m[K-Wclass-memaccess[m[K]
+[7.098s]  1716 |   [01;35m[Kmemcpy(&res, from, sizeof(Packet4c))[m[K;
+[7.098s]       |   [01;35m[K~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[m[K
+[7.099s] In file included from [01m[K/usr/include/eigen3/Eigen/Core:172[m[K,
+[7.099s]                  from [01m[K/usr/include/eigen3/Eigen/Dense:1[m[K,
+[7.099s]                  from [01m[K/usr/include/eigen3/Eigen/Eigen:1[m[K,
+[7.100s]                  from [01m[K/home/orangepi/ros_ws/src/px4_ros_com/include/px4_ros_com/frame_transforms.h:45[m[K,
+[7.100s]                  from [01m[K/home/orangepi/ros_ws/src/px4_ros_com/src/lib/frame_transforms.cpp:41[m[K:
+[7.101s] [01m[K/usr/include/eigen3/Eigen/src/Core/GenericPacketMath.h:159:8:[m[K [01;36m[Knote: [m[K‘[01m[KEigen::internal::Packet4c[m[K’ {aka ‘[01m[Kstruct Eigen::internal::eigen_packet_wrapper<int, 2>[m[K’} declared here
+[7.101s]   159 | struct [01;36m[Keigen_packet_wrapper[m[K
+[7.101s]       |        [01;36m[K^~~~~~~~~~~~~~~~~~~~[m[K
+[12.439s] [ 58%] [32m[1mLinking CXX executable debug_vect_advertiser[0m
+[13.894s] [ 58%] Built target debug_vect_advertiser
+[13.945s] [ 66%] [32m[1mLinking CXX executable offboard_control_srv[0m
+[15.743s] [ 66%] Built target offboard_control_srv
+[17.258s] [ 75%] [32m[1mLinking CXX executable offboard_control[0m
+[17.465s] [ 83%] [32m[1mLinking CXX executable sensor_combined_listener[0m
+[17.761s] [ 83%] Built target offboard_control
+[18.106s] [ 91%] [32m[1mLinking CXX executable vehicle_gps_position_listener[0m
+[18.339s] [ 91%] Built target sensor_combined_listener
+[18.947s] [ 91%] Built target vehicle_gps_position_listener
+[22.699s] [100%] [32m[1mLinking CXX shared library libframe_transforms.so[0m
+[23.268s] [100%] Built target frame_transforms
+[23.311s] Invoked command in '/home/orangepi/ros_ws/src/build/px4_ros_com' returned '0': AMENT_PREFIX_PATH=/home/orangepi/ros_ws/src/install/px4_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/orangepi/ros_ws/src/install/px4_msgs:/home/orangepi/ros_ws/install/slam_cartographer:/home/orangepi/ros_ws/install/oradar_lidar:/home/orangepi/install/slam_cartographer:/home/orangepi/install/oradar_lidar:/opt/ros/humble LD_LIBRARY_PATH=/home/orangepi/ros_ws/src/install/px4_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/orangepi/ros_ws/src/install/px4_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --build /home/orangepi/ros_ws/src/build/px4_ros_com -- -j8 -l8
+[23.344s] Invoking command in '/home/orangepi/ros_ws/src/build/px4_ros_com': AMENT_PREFIX_PATH=/home/orangepi/ros_ws/src/install/px4_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/orangepi/ros_ws/src/install/px4_msgs:/home/orangepi/ros_ws/install/slam_cartographer:/home/orangepi/ros_ws/install/oradar_lidar:/home/orangepi/install/slam_cartographer:/home/orangepi/install/oradar_lidar:/opt/ros/humble LD_LIBRARY_PATH=/home/orangepi/ros_ws/src/install/px4_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/orangepi/ros_ws/src/install/px4_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --install /home/orangepi/ros_ws/src/build/px4_ros_com
+[23.370s] -- Install configuration: ""
+[23.371s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/lib/px4_ros_com/sensor_combined_listener
+[23.382s] -- Set runtime path of "/home/orangepi/ros_ws/src/install/px4_ros_com/lib/px4_ros_com/sensor_combined_listener" to ""
+[23.382s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/lib/px4_ros_com/vehicle_gps_position_listener
+[23.389s] -- Set runtime path of "/home/orangepi/ros_ws/src/install/px4_ros_com/lib/px4_ros_com/vehicle_gps_position_listener" to ""
+[23.389s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/lib/px4_ros_com/debug_vect_advertiser
+[23.391s] -- Set runtime path of "/home/orangepi/ros_ws/src/install/px4_ros_com/lib/px4_ros_com/debug_vect_advertiser" to ""
+[23.391s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/lib/px4_ros_com/offboard_control
+[23.394s] -- Set runtime path of "/home/orangepi/ros_ws/src/install/px4_ros_com/lib/px4_ros_com/offboard_control" to ""
+[23.394s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/lib/px4_ros_com/offboard_control_srv
+[23.397s] -- Set runtime path of "/home/orangepi/ros_ws/src/install/px4_ros_com/lib/px4_ros_com/offboard_control_srv" to ""
+[23.398s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/share/px4_ros_com/environment/library_path.sh
+[23.398s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/share/px4_ros_com/environment/library_path.dsv
+[23.398s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/include/px4_ros_com
+[23.399s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/include/px4_ros_com/frame_transforms.h
+[23.399s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/lib/libframe_transforms.so
+[23.405s] -- Set runtime path of "/home/orangepi/ros_ws/src/install/px4_ros_com/lib/libframe_transforms.so" to ""
+[23.406s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/share/px4_ros_com//launch
+[23.407s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/share/px4_ros_com//launch/offboard_control_launch.yaml
+[23.407s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/share/px4_ros_com//launch/sensor_combined_listener.launch.py
+[23.407s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/share/px4_ros_com//test
+[23.408s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/share/px4_ros_com//test/test_input.py
+[23.408s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/share/px4_ros_com//test/pipeline_io_test.py
+[23.409s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/share/px4_ros_com//test/test_output.py
+[23.409s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/share/px4_ros_com//test/__init__.py
+[23.409s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/share/px4_ros_com/environment/pythonpath.sh
+[23.410s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/share/px4_ros_com/environment/pythonpath.dsv
+[23.410s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/local/lib/python3.10/dist-packages/px4_ros_com-0.1.0-py3.10.egg-info
+[23.410s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/local/lib/python3.10/dist-packages/px4_ros_com-0.1.0-py3.10.egg-info/top_level.txt
+[23.411s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/local/lib/python3.10/dist-packages/px4_ros_com-0.1.0-py3.10.egg-info/SOURCES.txt
+[23.412s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/local/lib/python3.10/dist-packages/px4_ros_com-0.1.0-py3.10.egg-info/dependency_links.txt
+[23.412s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/local/lib/python3.10/dist-packages/px4_ros_com-0.1.0-py3.10.egg-info/PKG-INFO
+[23.412s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/local/lib/python3.10/dist-packages/px4_ros_com
+[23.413s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/local/lib/python3.10/dist-packages/px4_ros_com/module_to_import.py
+[23.413s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/local/lib/python3.10/dist-packages/px4_ros_com/__init__.py
+[23.479s] Listing '/home/orangepi/ros_ws/src/install/px4_ros_com/local/lib/python3.10/dist-packages/px4_ros_com'...
+[23.480s] Compiling '/home/orangepi/ros_ws/src/install/px4_ros_com/local/lib/python3.10/dist-packages/px4_ros_com/__init__.py'...
+[23.480s] Compiling '/home/orangepi/ros_ws/src/install/px4_ros_com/local/lib/python3.10/dist-packages/px4_ros_com/module_to_import.py'...
+[23.489s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/lib/px4_ros_com/offboard_control.py
+[23.491s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/share/ament_index/resource_index/package_run_dependencies/px4_ros_com
+[23.492s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/share/ament_index/resource_index/parent_prefix_path/px4_ros_com
+[23.493s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/share/px4_ros_com/environment/ament_prefix_path.sh
+[23.493s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/share/px4_ros_com/environment/ament_prefix_path.dsv
+[23.494s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/share/px4_ros_com/environment/path.sh
+[23.495s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/share/px4_ros_com/environment/path.dsv
+[23.496s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/share/px4_ros_com/local_setup.bash
+[23.496s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/share/px4_ros_com/local_setup.sh
+[23.497s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/share/px4_ros_com/local_setup.zsh
+[23.498s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/share/px4_ros_com/local_setup.dsv
+[23.499s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/share/px4_ros_com/package.dsv
+[23.500s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/share/ament_index/resource_index/packages/px4_ros_com
+[23.501s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/share/px4_ros_com/cmake/export_frame_transformsExport.cmake
+[23.503s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/share/px4_ros_com/cmake/export_frame_transformsExport-noconfig.cmake
+[23.504s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/share/px4_ros_com/cmake/ament_cmake_export_dependencies-extras.cmake
+[23.504s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/share/px4_ros_com/cmake/ament_cmake_export_targets-extras.cmake
+[23.505s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/share/px4_ros_com/cmake/ament_cmake_export_include_directories-extras.cmake
+[23.506s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/share/px4_ros_com/cmake/ament_cmake_export_libraries-extras.cmake
+[23.507s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/share/px4_ros_com/cmake/px4_ros_comConfig.cmake
+[23.507s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/share/px4_ros_com/cmake/px4_ros_comConfig-version.cmake
+[23.508s] -- Installing: /home/orangepi/ros_ws/src/install/px4_ros_com/share/px4_ros_com/package.xml
+[23.515s] Invoked command in '/home/orangepi/ros_ws/src/build/px4_ros_com' returned '0': AMENT_PREFIX_PATH=/home/orangepi/ros_ws/src/install/px4_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/orangepi/ros_ws/src/install/px4_msgs:/home/orangepi/ros_ws/install/slam_cartographer:/home/orangepi/ros_ws/install/oradar_lidar:/home/orangepi/install/slam_cartographer:/home/orangepi/install/oradar_lidar:/opt/ros/humble LD_LIBRARY_PATH=/home/orangepi/ros_ws/src/install/px4_msgs/lib:${LD_LIBRARY_PATH} PYTHONPATH=/home/orangepi/ros_ws/src/install/px4_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --install /home/orangepi/ros_ws/src/build/px4_ros_com

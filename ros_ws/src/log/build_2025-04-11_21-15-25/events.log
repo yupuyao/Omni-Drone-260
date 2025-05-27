@@ -1,0 +1,17 @@
+[0.000000] (-) TimerEvent: {}
+[0.000524] (-) JobUnselected: {'identifier': 'example_executor_with_multiple_modes_cpp'}
+[0.000653] (-) JobUnselected: {'identifier': 'example_global_navigation_cpp'}
+[0.000780] (-) JobUnselected: {'identifier': 'example_local_navigation_cpp'}
+[0.000883] (-) JobUnselected: {'identifier': 'example_mode_fw_attitude_cpp'}
+[0.001004] (-) JobUnselected: {'identifier': 'example_mode_goto_cpp'}
+[0.001112] (-) JobUnselected: {'identifier': 'example_mode_goto_global_cpp'}
+[0.001215] (-) JobUnselected: {'identifier': 'example_mode_manual_cpp'}
+[0.001317] (-) JobUnselected: {'identifier': 'example_mode_rtl_replacement_cpp'}
+[0.001419] (-) JobUnselected: {'identifier': 'example_mode_with_executor_cpp'}
+[0.001521] (-) JobUnselected: {'identifier': 'oradar_lidar'}
+[0.001623] (-) JobUnselected: {'identifier': 'px4_msgs'}
+[0.001725] (-) JobUnselected: {'identifier': 'px4_ros2_cpp'}
+[0.001828] (-) JobUnselected: {'identifier': 'px4_ros_com'}
+[0.001929] (-) JobUnselected: {'identifier': 'px4_to_ros2'}
+[0.002031] (-) JobUnselected: {'identifier': 'slam_cartographer'}
+[0.002133] (-) EventReactorShutdown: {}
