@@ -11,7 +11,7 @@
 
 ## 🚀 Getting Started
 
-To run the system, simply execute the `pipeline.sh` script in the root directory:
+To run the system, simply execute the `pipeline.sh` script in the utils directory:
 
 ```bash
 ./pipeline.sh
