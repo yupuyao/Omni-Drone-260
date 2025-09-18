@@ -2,7 +2,7 @@
 #define IMU_TRANSFORM_NODE_HPP
 
 #include <rclcpp/rclcpp.hpp>
-#include <px4_msgs/msg/sensor_combined.hpp>
+#include <px4_msgs/msg/vehicle_optical_flow_vel.hpp>
 #include <px4_msgs/msg/vehicle_attitude.hpp>
 #include <sensor_msgs/msg/imu.hpp>
 #include <tf2_ros/transform_broadcaster.h>
@@ -19,7 +19,7 @@ public:
 
 private:
     // Callback functions
-    void sensor_callback(const px4_msgs::msg::SensorCombined::SharedPtr msg);
+    void sensor_callback(const px4_msgs::msg::VehicleOpticalFlowVel::SharedPtr msg);
     void attitude_callback(const px4_msgs::msg::VehicleAttitude::SharedPtr msg);
     
     // Helper function to convert PX4 timestamp to ROS time
@@ -32,12 +32,12 @@ private:
     std::mutex data_mutex_;
     
     // Store the latest sensor and attitude messages
-    px4_msgs::msg::SensorCombined::SharedPtr latest_sensor_;
+    px4_msgs::msg::VehicleOpticalFlowVel::SharedPtr latest_sensor_;
     px4_msgs::msg::VehicleAttitude::SharedPtr latest_attitude_;
     
     // Publishers and subscribers
     rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr imu_publisher_;
-    rclcpp::Subscription<px4_msgs::msg::SensorCombined>::SharedPtr sensor_subscription_;
+    rclcpp::Subscription<px4_msgs::msg::VehicleOpticalFlowVel>::SharedPtr sensor_subscription_;
     rclcpp::Subscription<px4_msgs::msg::VehicleAttitude>::SharedPtr attitude_subscription_;
     
     // TF broadcaster

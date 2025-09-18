@@ -42,15 +42,21 @@
 #include <px4_msgs/msg/trajectory_setpoint.hpp>
 #include <px4_msgs/msg/vehicle_command.hpp>
 #include <px4_msgs/msg/vehicle_control_mode.hpp>
+#include <px4_msgs/msg/vehicle_attitude.hpp>
 #include <px4_msgs/msg/vehicle_local_position.hpp>
 #include <px4_msgs/msg/vehicle_status.hpp>
 #include <px4_msgs/msg/vehicle_odometry.hpp>
 #include <px4_msgs/msg/vehicle_land_detected.hpp>
 #include <px4_msgs/msg/takeoff_status.hpp>
 #include <nav_msgs/msg/odometry.hpp>
+#include <Eigen/Core>
+#include <Eigen/Geometry>
 #include <rclcpp/rclcpp.hpp>
 #include <stdint.h>
-
+#include <fcntl.h>      
+#include <sys/stat.h>    
+#include <sys/mman.h>
+#include <unistd.h>  
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <quadrotor_msgs/quadrotor_msgs/msg/position_command.hpp>
 
@@ -65,7 +71,7 @@ using namespace px4_msgs::msg;
 class OffboardControl : public rclcpp::Node
 {
 public:
-    OffboardControl() : Node("offboard_control")
+    OffboardControl(std::atomic<bool>* land_triggered) : Node("offboard_control")
     {
         rclcpp::QoS publisher_qos(1);
         publisher_qos.durability(RMW_QOS_POLICY_DURABILITY_TRANSIENT_LOCAL);
@@ -80,6 +86,8 @@ public:
             .reliable()      
             .keep_last(10);
         
+        land_triggered_ = land_triggered;
+
         //publish topic
         offboard_control_mode_publisher_ = this->create_publisher<OffboardControlMode>(
             "/fmu/in/offboard_control_mode", publisher_qos);
@@ -87,8 +95,13 @@ public:
             "/fmu/in/trajectory_setpoint", publisher_qos);
         vehicle_command_publisher_ = this->create_publisher<VehicleCommand>(
             "/fmu/in/vehicle_command", publisher_qos);
+        
         visual_odometry_publisher_ = this->create_publisher<VehicleOdometry>(
             "/fmu/in/vehicle_visual_odometry", publisher_qos);
+        
+        
+        vio_odometry_publisher_ = this->create_publisher<nav_msgs::msg::Odometry>(
+            "/vins_estimator/odometry", 5);
             
         //subscribe topic
         vehicle_local_position_subscriber_ = this->create_subscription<VehicleLocalPosition>(
@@ -103,17 +116,27 @@ public:
             std::bind(&OffboardControl::vehicle_status_callback, this, std::placeholders::_1)
         );
         
+        odom_subscriber_ = this->create_subscription<VehicleOdometry>(
+            "/fmu/out/vehicle_odometry",
+            qos,
+            std::bind(&OffboardControl::odom_callback, this, std::placeholders::_1)
+        );
+        
         takeoff_status_subscriber_ = this->create_subscription<TakeoffStatus>(
             "/fmu/out/takeoff_status",
             qos,
             std::bind(&OffboardControl::takeoff_callback, this, std::placeholders::_1)
         );
         
+        
+        
         vio_odometry_subscriber_ = this->create_subscription<nav_msgs::msg::Odometry>(
-            "/vins_estimator/odometry",
+            "/orbslam/odom",
             10,
             std::bind(&OffboardControl::vio_odometry_callback, this, std::placeholders::_1)
         );
+        
+        
 
         trajectory_subscriber_ = this->create_subscription<quadrotor_msgs::msg::PositionCommand>(
             "/drone_0_planning/pos_cmd",
@@ -121,10 +144,16 @@ public:
             std::bind(&OffboardControl::trajectory_callback, this, std::placeholders::_1)
         );
         
+        attitude_subscription_ = this->create_subscription<px4_msgs::msg::VehicleAttitude>(
+        "/fmu/out/vehicle_attitude",
+        qos,
+        std::bind(&OffboardControl::attitude_callback, this, std::placeholders::_1)
+        );
+        
 
         offboard_setpoint_counter_ = 0;
-        land_triggered_.store(false);
         has_taken_off_.store(false);
+        has_land_=false;
 
         auto timer_callback = [this]() -> void {
             if (offboard_setpoint_counter_ == 10) {
@@ -133,19 +162,26 @@ public:
 
                 // Arm the vehicle
                 this->arm();
-                this->takeoff();
-                init_time_ = std::chrono::steady_clock::now();
+                int result = system("/home/orangepi/utils/hc12");
+                //this->takeoff();
+                //init_time_ = std::chrono::steady_clock::now();
                 //this->disarm();
                 //exit(0);
             }
 
             // offboard_control_mode needs to be paired with trajectory_setpoint
+            /*
             if (has_taken_off_.load()){
             publish_offboard_control_mode();
             publish_trajectory_setpoint();
             }
+            */
+            if (!land_triggered_->load()&&has_received_attitude_){
+            publish_offboard_control_mode();
+            publish_trajectory_setpoint();
+            }
             
-            if (land_triggered_.load()){
+            else if (!has_land_&&has_taken_off_.load()){
                 rmw_qos_profile_t qos_profile = rmw_qos_profile_sensor_data;
                 auto qos = rclcpp::QoS(rclcpp::QoSInitialization(qos_profile.history, 5), qos_profile);
                 land_detect_subscriber_ = this->create_subscription<px4_msgs::msg::VehicleLandDetected>(
@@ -153,6 +189,7 @@ public:
                     std::bind(&OffboardControl::land_detect_callback, this, std::placeholders::_1)
                 );
                 land();
+                has_land_=true;
             }
 
             // stop the counter after reaching 11
@@ -160,7 +197,7 @@ public:
                 offboard_setpoint_counter_++;
             }
         };
-        timer_ = this->create_wall_timer(10ms, timer_callback);
+        timer_ = this->create_wall_timer(100ms, timer_callback);
         
         has_received_local_position_ = false;
         has_received_vehicle_status_ = false;
@@ -184,9 +221,12 @@ private:
     rclcpp::Publisher<TrajectorySetpoint>::SharedPtr trajectory_setpoint_publisher_;
     rclcpp::Publisher<VehicleCommand>::SharedPtr vehicle_command_publisher_;
     rclcpp::Publisher<VehicleOdometry>::SharedPtr visual_odometry_publisher_;
+    rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr vio_odometry_publisher_;
     
+    rclcpp::Subscription<VehicleAttitude>::SharedPtr attitude_subscription_;
     rclcpp::Subscription<VehicleLocalPosition>::SharedPtr vehicle_local_position_subscriber_;
     rclcpp::Subscription<VehicleStatus>::SharedPtr vehicle_status_subscriber_;
+    rclcpp::Subscription<VehicleOdometry>::SharedPtr odom_subscriber_;
     rclcpp::Subscription<quadrotor_msgs::msg::PositionCommand>::SharedPtr trajectory_subscriber_;
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr vio_odometry_subscriber_;
     rclcpp::Subscription<px4_msgs::msg::VehicleLandDetected>::SharedPtr land_detect_subscriber_;
@@ -194,13 +234,15 @@ private:
     rclcpp::TimerBase::SharedPtr hover_timer_;
 
     std::atomic<uint64_t> timestamp_;   //!< common synced timestamped
-    std::atomic<bool> land_triggered_;
     std::atomic<bool> has_taken_off_;
+    std::atomic<bool>* land_triggered_;
 
     uint64_t offboard_setpoint_counter_;   //!< counter for the number of setpoints sent
     
     VehicleLocalPosition vehicle_local_position_;
     VehicleStatus vehicle_status_;
+    VehicleOdometry latest_vehicle_odometry_;
+    VehicleAttitude latest_attitude_;
     quadrotor_msgs::msg::PositionCommand latest_trajectory_;
     nav_msgs::msg::Odometry latest_vio_odometry_;
     
@@ -209,20 +251,28 @@ private:
     std::mutex data_mutex_; 
     
     bool has_received_local_position_;
+    bool has_received_attitude_;
     bool has_received_vehicle_status_;
     bool has_received_trajectory_;
     bool has_received_vio_odometry_;
+    bool has_received_odometry_;
     bool has_received_land_status_;
+    bool has_land_;
+    bool initial_yaw_set_ = false;
+    double initial_yaw_ = 0.0;
 
     void publish_offboard_control_mode();
     void publish_trajectory_setpoint();
     void publish_vehicle_command(uint16_t command, float param1 = 0.0, float param2 = 0.0);
     void publish_visual_odometry();
+    void publish_odometry();
     
+    void attitude_callback(const VehicleAttitude::SharedPtr msg);
     void vehicle_local_position_callback(const VehicleLocalPosition::SharedPtr msg);
     void vehicle_status_callback(const VehicleStatus::SharedPtr msg);
     void trajectory_callback(const quadrotor_msgs::msg::PositionCommand::SharedPtr msg);
     void land_detect_callback(const VehicleLandDetected::SharedPtr msg);
+    void odom_callback(const VehicleOdometry::SharedPtr msg);
     void vio_odometry_callback(const nav_msgs::msg::Odometry::SharedPtr msg);
     void takeoff_callback(const TakeoffStatus::SharedPtr msg);
     void check_hover_and_land();
@@ -232,6 +282,14 @@ private:
     builtin_interfaces::msg::Time convert_px4_timestamp(uint64_t timestamp_us);
 };
 
+void OffboardControl::attitude_callback(const VehicleAttitude::SharedPtr msg)
+{
+    if (!initial_yaw_set_) {
+        latest_attitude_ = *msg;
+        RCLCPP_INFO(this->get_logger(), "init");
+        }
+    has_received_attitude_ = true;
+}
 
 void OffboardControl::vehicle_local_position_callback(const VehicleLocalPosition::SharedPtr msg)
 {
@@ -274,7 +332,7 @@ void OffboardControl::takeoff_callback(const TakeoffStatus::SharedPtr msg)
 {    
     rclcpp::Time now_time = this->now();
     auto now = std::chrono::steady_clock::now();
-    auto elap = std::chrono::duration_cast<std::chrono::seconds>(now - init_time_).count();
+    //auto elap = std::chrono::duration_cast<std::chrono::seconds>(now - init_time_).count();
     takeoff_status_ = *msg;
     
     // Map takeoff_state to a human-readable string for debugging
@@ -283,31 +341,17 @@ void OffboardControl::takeoff_callback(const TakeoffStatus::SharedPtr msg)
         case 0: state_description = "Disarmed"; break;
         case 1: state_description = "Spooling"; break;
         case 2: state_description = "Ready for takeoff"; break;
-        case 3: {
-            state_description = "Ramping up";
-            //publish_trajectory_setpoint();
-            //RCLCPP_INFO(this->get_logger(), "Publish Trajectory point");
-        }; break;
+        case 3: state_description = "Ramping up"; break;
         case 4: state_description = "In air (ascending)"; break;
-        case 5: state_description = "In air (takeoff complete)"; break;
+        case 5: {state_description = "In air (takeoff complete)";
+        has_taken_off_.store(true);
+        } break;
         default: state_description = "Unknown"; break;
     }
     
     // Log the current takeoff state
     RCLCPP_INFO(this->get_logger(), "Takeoff state: %d (%s)", 
                 takeoff_status_.takeoff_state, state_description.c_str());
-
-    // Set takeoff_time_ only the first time takeoff_state reaches 5
-    if (takeoff_status_.takeoff_state == 5 && !has_taken_off_.load()) {
-        has_taken_off_.store(true);
-        takeoff_time_ = std::chrono::steady_clock::now();
-        RCLCPP_INFO(this->get_logger(), "Takeoff detected. Starting hover timer.");
-    }
-
-    // Check for hover and land if takeoff has occurred
-    if (has_taken_off_.load()) {
-        check_hover_and_land();
-    }
 }
 
 void OffboardControl::check_hover_and_land()
@@ -316,13 +360,19 @@ void OffboardControl::check_hover_and_land()
         auto now = std::chrono::steady_clock::now();
         auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - takeoff_time_).count();
 
-        if (elapsed >= 2) {
+        if (elapsed >= 6) {
             RCLCPP_INFO(this->get_logger(), "Hover complete. Initiating landing.");
-            land_triggered_.store(true);
+            land_triggered_->store(true);
         }
     }
 }
 
+void OffboardControl::odom_callback(const VehicleOdometry::SharedPtr msg)
+{
+    latest_vehicle_odometry_ = *msg;
+    has_received_odometry_ = true;
+    publish_odometry();
+}
 
 void OffboardControl::vio_odometry_callback(const nav_msgs::msg::Odometry::SharedPtr msg)
 {
@@ -401,7 +451,7 @@ void OffboardControl::publish_offboard_control_mode()
 {
     OffboardControlMode msg{};
     msg.position = true;
-    msg.velocity = true;
+    msg.velocity = false;
     msg.acceleration = false;
     msg.attitude = false;
     msg.body_rate = false;
@@ -422,16 +472,36 @@ void OffboardControl::publish_visual_odometry()
     }
 
     VehicleOdometry msg{};
+    Eigen::Quaterniond q_eigen(
+    latest_attitude_.q[0], 
+    latest_attitude_.q[1], 
+    latest_attitude_.q[2], 
+    latest_attitude_.q[3]
+    );
+    
+    Eigen::Vector3d pos_ned(
+    vehicle_local_position_.x,
+    vehicle_local_position_.y,
+    vehicle_local_position_.z
+    );
+    
+    Eigen::Quaterniond q_frd = q_eigen.conjugate();
+    
+    Eigen::Affine3d transform(q_frd);
+    
+    Eigen::Vector3d pos_frd = transform * pos_ned;
+    
     msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
     msg.timestamp_sample = msg.timestamp;
     
-    msg.pose_frame = VehicleOdometry::POSE_FRAME_NED;
-    msg.velocity_frame = VehicleOdometry::VELOCITY_FRAME_NED;
+    msg.pose_frame = VehicleOdometry::POSE_FRAME_FRD;
+    
+    double scale = -q_frd.z() / latest_vio_odometry_.pose.pose.position.z;
     
 
-    msg.position[0] = latest_vio_odometry_.pose.pose.position.x;
-    msg.position[1] = -latest_vio_odometry_.pose.pose.position.y;
-    msg.position[2] = -latest_vio_odometry_.pose.pose.position.z;
+    msg.position[0] = latest_vio_odometry_.pose.pose.position.x * scale;
+    msg.position[1] = -latest_vio_odometry_.pose.pose.position.y * scale;
+    msg.position[2] = -q_frd.z();
     
     double qx = latest_vio_odometry_.pose.pose.orientation.x;
     double qy = latest_vio_odometry_.pose.pose.orientation.y;
@@ -443,6 +513,7 @@ void OffboardControl::publish_visual_odometry()
     msg.q[2] = -qy;
     msg.q[3] = -qz;
     
+    /*
     msg.velocity[0] = latest_vio_odometry_.twist.twist.linear.x;
     msg.velocity[1] = -latest_vio_odometry_.twist.twist.linear.y;
     msg.velocity[2] = -latest_vio_odometry_.twist.twist.linear.z;
@@ -458,40 +529,178 @@ void OffboardControl::publish_visual_odometry()
         
         msg.orientation_variance[i] = latest_vio_odometry_.pose.covariance[(i+3)*6 + (i+3)];
     }
-    
+    */
     
     visual_odometry_publisher_->publish(msg);
     RCLCPP_DEBUG(this->get_logger(), "Published visual odometry data");
 }
 
+void OffboardControl::publish_odometry()
+{
+    if (!has_received_odometry_) {
+        return; 
+    }
+    
+    Eigen::Quaterniond q_eigen(
+    latest_attitude_.q[0], 
+    latest_attitude_.q[1], 
+    latest_attitude_.q[2], 
+    latest_attitude_.q[3]
+    );
+    
+    Eigen::Quaterniond q_frd = q_eigen.conjugate();
+    
+    Eigen::Affine3d transform(q_frd);
+    
+    nav_msgs::msg::Odometry vio_msg{};
+    
+    vio_msg.header.stamp.nanosec = (latest_vehicle_odometry_.timestamp % 1000000) * 1000;
+    vio_msg.header.stamp.sec = latest_vehicle_odometry_.timestamp / 1000000;
+    vio_msg.header.frame_id = "odom";
+    
+    Eigen::Vector3d pos_ned(
+    latest_vehicle_odometry_.position[0],
+    latest_vehicle_odometry_.position[1],
+    latest_vehicle_odometry_.position[2]
+    );
+    Eigen::Vector3d pos_frd = transform * pos_ned;
+
+    vio_msg.pose.pose.position.x = pos_frd.x();
+    vio_msg.pose.pose.position.y = -pos_frd.y();
+    vio_msg.pose.pose.position.z = -pos_frd.z();
+
+
+    vio_msg.pose.pose.orientation.w = q_frd.w();
+    vio_msg.pose.pose.orientation.x = q_frd.x();
+    vio_msg.pose.pose.orientation.y = -q_frd.y();
+    vio_msg.pose.pose.orientation.z = -q_frd.z();
+    
+    Eigen::Vector3d vel_ned(
+    latest_vehicle_odometry_.velocity[0],
+    latest_vehicle_odometry_.velocity[1],
+    latest_vehicle_odometry_.velocity[2]
+    );
+    Eigen::Vector3d vel_frd = transform.rotation() * vel_ned;
+
+    vio_msg.twist.twist.linear.x = vel_frd.x();
+    vio_msg.twist.twist.linear.y = -vel_frd.y();
+    vio_msg.twist.twist.linear.z = -vel_frd.z();
+
+    Eigen::Vector3d angvel_ned(
+    latest_vehicle_odometry_.angular_velocity[0],
+    latest_vehicle_odometry_.angular_velocity[1],
+    latest_vehicle_odometry_.angular_velocity[2]
+    );
+    Eigen::Vector3d angvel_frd = transform.rotation() * angvel_ned;
+
+    vio_msg.twist.twist.angular.x = angvel_frd.x();
+    vio_msg.twist.twist.angular.y = -angvel_frd.y();
+    vio_msg.twist.twist.angular.z = -angvel_frd.z();
+    
+
+    for (int i = 0; i < 3; i++) {
+        vio_msg.pose.covariance[i*6 + i] = latest_vehicle_odometry_.position_variance[i];
+    }
+    
+    for (int i = 0; i < 3; i++) {
+        vio_msg.pose.covariance[(i+3)*6 + (i+3)] = latest_vehicle_odometry_.orientation_variance[i];
+    }
+    
+    for (int i = 0; i < 3; i++) {
+        vio_msg.twist.covariance[i*6 + i] = latest_vehicle_odometry_.velocity_variance[i];
+    }
+    
+
+    vio_odometry_publisher_->publish(vio_msg);
+    RCLCPP_DEBUG(this->get_logger(), "Published VehicleOdometry data to VIO format");
+}
+
 void OffboardControl::publish_trajectory_setpoint()
 {
     TrajectorySetpoint msg{};
+    
+    Eigen::Quaterniond q_eigen(
+    latest_attitude_.q[0], 
+    latest_attitude_.q[1], 
+    latest_attitude_.q[2], 
+    latest_attitude_.q[3]
+    );
+    
+    Eigen::Affine3d transform(q_eigen);
 
     if (has_received_trajectory_) {     
         
-        double yaw_ego = latest_trajectory_.yaw;
+        double yaw_ego = -latest_trajectory_.yaw;
+        Eigen::Vector3d heading_frd(cos(yaw_ego), sin(yaw_ego), 0.0); 
         
-        msg.position[0] = latest_trajectory_.position.x;
-        msg.position[1] = -latest_trajectory_.position.y;
-        msg.position[2] = -latest_trajectory_.position.z;
+        Eigen::Vector3d pos_frd(
+        latest_trajectory_.position.x, 
+        -latest_trajectory_.position.y, 
+        -latest_trajectory_.position.z
+        );
         
-        msg.velocity[0] = latest_trajectory_.velocity.x;
-        msg.velocity[1] = -latest_trajectory_.velocity.y;
-        msg.velocity[2] = -latest_trajectory_.velocity.z;
+        Eigen::Vector3d vel_frd(
+        latest_trajectory_.velocity.x, 
+        -latest_trajectory_.velocity.y, 
+        -latest_trajectory_.velocity.z
+        );
         
-        msg.acceleration[0] = latest_trajectory_.acceleration.x;
-        msg.acceleration[1] = -latest_trajectory_.acceleration.y;
-        msg.acceleration[2] = -latest_trajectory_.acceleration.z;
+        Eigen::Vector3d pos_ned = transform * pos_frd;
+        Eigen::Vector3d vel_ned = transform.rotation() * vel_frd;
         
-        msg.yaw = - yaw_ego;
+        msg.position[0] = pos_ned.x();
+        msg.position[1] = pos_ned.y();
+        msg.position[2] = pos_ned.z();
         
-        if (msg.yaw > M_PI) msg.yaw -= 2.0 * M_PI;
-        if (msg.yaw < -M_PI) msg.yaw += 2.0 * M_PI;
+        msg.velocity[0] = vel_ned.x();
+        msg.velocity[1] = vel_ned.y();
+        msg.velocity[2] = vel_ned.z();
+        
+        Eigen::Vector3d heading_ned = q_eigen * heading_frd;
+        msg.yaw = std::atan2(heading_ned.y(), heading_ned.x());
+        
+        //msg.acceleration[0] = latest_trajectory_.acceleration.x;
+        //msg.acceleration[1] = -latest_trajectory_.acceleration.y;
+        //msg.acceleration[2] = -latest_trajectory_.acceleration.z;
+        
+        
+        //if (msg.yaw > M_PI) msg.yaw -= 2.0 * M_PI;
+        //if (msg.yaw < -M_PI) msg.yaw += 2.0 * M_PI;
         
         RCLCPP_INFO(this->get_logger(), "Publishing trajectory setpoint from planning data");
+    }
+    else if (!has_taken_off_.load()) {
+    
+        Eigen::Vector3d pos_frd(
+        0.0, 
+        0.0, 
+        -1.0
+        );
+        
+        Eigen::Vector3d pos_ned = pos_frd;
+
+        msg.position[0] = pos_ned.x();
+        msg.position[1] = pos_ned.y();
+        msg.position[2] = pos_ned.z();
+
+
+        //msg.acceleration[0] = 0.0;
+        //msg.acceleration[1] = 0.0;
+        //msg.acceleration[2] = 0.0;
+        if (!initial_yaw_set_) {
+        double yaw = 0.0; 
+        Eigen::Vector3d heading_frd(cos(yaw), sin(yaw), 0.0);
+        Eigen::Vector3d heading_ned = q_eigen * heading_frd;
+        initial_yaw_ = std::atan2(heading_ned.y(), heading_ned.x());
+        initial_yaw_set_ = true;
+        RCLCPP_INFO(this->get_logger(), "init yaw", msg.yaw);
+        }
+        msg.yaw = initial_yaw_;
+
+        //RCLCPP_DEBUG(this->get_logger(), "Publishing default trajectory setpoint");
+        RCLCPP_INFO(this->get_logger(), "takeoff point, yaw = %.3f", msg.yaw);
     }   
-    else {
+    /*else {
 
         msg.position[0] = vehicle_local_position_.x;
         msg.position[1] = vehicle_local_position_.y;
@@ -506,6 +715,33 @@ void OffboardControl::publish_trajectory_setpoint()
         //msg.acceleration[2] = 0.0;
 
         msg.yaw = vehicle_local_position_.heading;
+        //RCLCPP_DEBUG(this->get_logger(), "Publishing default trajectory setpoint");
+        RCLCPP_INFO(this->get_logger(), "Hold");
+    }*/
+    else {
+
+        Eigen::Vector3d pos_frd(
+        0.0, 
+        0.0, 
+        -1.0
+        );
+        
+        Eigen::Vector3d pos_ned = pos_frd;
+
+        msg.position[0] = pos_ned.x();
+        msg.position[1] = pos_ned.y();
+        msg.position[2] = pos_ned.z();
+
+        //msg.velocity[0] = 0.0;
+        //msg.velocity[1] = 0.0;
+        //msg.velocity[2] = 0.0;
+
+        //msg.acceleration[0] = 0.0;
+        //msg.acceleration[1] = 0.0;
+        //msg.acceleration[2] = 0.0;
+        msg.yaw = initial_yaw_;
+
+        //msg.yaw = 0.0;
         //RCLCPP_DEBUG(this->get_logger(), "Publishing default trajectory setpoint");
         RCLCPP_INFO(this->get_logger(), "Hold");
     }
@@ -539,12 +775,27 @@ void OffboardControl::publish_vehicle_command(uint16_t command, float param1, fl
 
 int main(int argc, char *argv[])
 {
-    std::cout << "Starting offboard control node..." << std::endl;
+    const char* shm_name = "/shared_mem";
+
+    int shm_fd = shm_open(shm_name, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
+    if (shm_fd == -1) {
+        std::cerr << "Failed to open shared memory" << std::endl;
+    }
+
+    if (ftruncate(shm_fd, sizeof(std::atomic<bool>)) == -1) {
+        std::cerr << "Failed to set size of shared memory" << std::endl;
+    }
+
+    void* shared_mem = mmap(nullptr, sizeof(std::atomic<bool>), PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
+    if (shared_mem == MAP_FAILED) {
+        std::cerr << "Failed to map shared memory" << std::endl;
+    }
+
+    auto* land_triggered_ = new(shared_mem) std::atomic<bool>(false);
     setvbuf(stdout, NULL, _IONBF, BUFSIZ);
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<OffboardControl>());
+    rclcpp::spin(std::make_shared<OffboardControl>(land_triggered_));
 
     rclcpp::shutdown();
     return 0;
 }
-

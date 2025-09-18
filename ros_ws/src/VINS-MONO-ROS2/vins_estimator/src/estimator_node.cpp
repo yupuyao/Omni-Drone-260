@@ -38,6 +38,7 @@ Eigen::Vector3d gyr_0;
 bool init_feature = 0;
 bool init_imu = 1;
 double last_imu_t = 0;
+bool is_static = false;
 
 void predict(const sensor_msgs::msg::Imu::SharedPtr imu_msg)
 {
@@ -147,6 +148,37 @@ void imu_callback(const sensor_msgs::msg::Imu::SharedPtr imu_msg)
 
     m_buf.lock();
     imu_buf.push(imu_msg);
+    if(imu_buf.size() > 10){
+        sensor_msgs::msg::Imu::SharedPtr imu_now = imu_buf.back();
+        sensor_msgs::msg::Imu::SharedPtr imu_old;
+        int target_index = imu_buf.size() - 10;
+        int current_index = 0;
+
+        std::queue<sensor_msgs::msg::Imu::SharedPtr> temp_buf = imu_buf; // Create a temporary copy of imu_buf
+        while (!temp_buf.empty()) {
+            if (current_index == target_index) {
+                imu_old = temp_buf.front();
+                break;
+            }
+            temp_buf.pop();
+            current_index++;
+        }
+        if (imu_old){
+        Eigen::Vector3d accel_now(imu_now->linear_acceleration.x, imu_now->linear_acceleration.y, imu_now->linear_acceleration.z);
+        Eigen::Vector3d accel_old(imu_old->linear_acceleration.x, imu_old->linear_acceleration.y, imu_old->linear_acceleration.z);
+        
+        // Calculate the Euclidean distance between accel_now and accel_old
+        double distance = (accel_old - accel_now).norm();
+
+        // ROS_INFO("THE DISTANS IS %f\n",distance);
+        if(distance <= 0.05){
+            // ROS_INFO("the robot is static\n");
+            is_static = true;
+        }else{
+            is_static = false;
+        }
+        }
+    }
     m_buf.unlock();
     con.notify_one();
 
@@ -242,7 +274,7 @@ void process()
                     rx = imu_msg->angular_velocity.x;
                     ry = imu_msg->angular_velocity.y;
                     rz = imu_msg->angular_velocity.z;
-                    estimator.processIMU(dt, Vector3d(dx, dy, dz), Vector3d(rx, ry, rz));
+                    estimator.processIMU(dt, Vector3d(dx, dy, dz), Vector3d(rx, ry, rz), is_static);
                     //printf("imu: dt:%f a: %f %f %f w: %f %f %f\n",dt, dx, dy, dz, rx, ry, rz);
 
                 }
@@ -262,7 +294,7 @@ void process()
                     rx = w1 * rx + w2 * imu_msg->angular_velocity.x;
                     ry = w1 * ry + w2 * imu_msg->angular_velocity.y;
                     rz = w1 * rz + w2 * imu_msg->angular_velocity.z;
-                    estimator.processIMU(dt_1, Vector3d(dx, dy, dz), Vector3d(rx, ry, rz));
+                    estimator.processIMU(dt_1, Vector3d(dx, dy, dz), Vector3d(rx, ry, rz), is_static);
                     //printf("dimu: dt:%f a: %f %f %f w: %f %f %f\n",dt_1, dx, dy, dz, rx, ry, rz);
                 }
             }
@@ -346,7 +378,7 @@ int main(int argc, char **argv)
     rclcpp::init(argc, argv);
     auto n = rclcpp::Node::make_shared("vins_estimator");
     readParameters(n);
-    estimator.setParameter();
+    //estimator.setParameter();
 #ifdef EIGEN_DONT_PARALLELIZE
     RCUTILS_LOG_DEBUG("EIGEN_DONT_PARALLELIZE");
 #endif

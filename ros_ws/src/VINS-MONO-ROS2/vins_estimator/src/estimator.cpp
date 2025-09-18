@@ -1,5 +1,7 @@
 #include "estimator.h"
 
+
+
 Estimator::Estimator(): f_manager{Rs}
 {
     RCUTILS_LOG_INFO("init begins");
@@ -17,11 +19,6 @@ void Estimator::setParameter()
     ProjectionFactor::sqrt_info = FOCAL_LENGTH / 1.5 * Matrix2d::Identity();
     ProjectionTdFactor::sqrt_info = FOCAL_LENGTH / 1.5 * Matrix2d::Identity();
     td = TD;
-}
-
-void Estimator::initPub(rclcpp::Node::SharedPtr n){
-node_ = n; 
-pub_init_odom = n->create_publisher<px4_msgs::msg::VehicleOdometry>("/fmu/in/vehicle_visual_odometry", 1000);
 }
 
 void Estimator::clearState()
@@ -86,10 +83,16 @@ void Estimator::clearState()
     drift_correct_t = Vector3d::Zero();
 }
 
-void Estimator::processIMU(double dt, const Vector3d &linear_acceleration, const Vector3d &angular_velocity)
+void Estimator::initPub(rclcpp::Node::SharedPtr n){
+node_ = n; 
+pub_init_odom = n->create_publisher<px4_msgs::msg::VehicleOdometry>("/fmu/in/vehicle_visual_odometry", 1000);
+}
+
+void Estimator::processIMU(double dt, const Vector3d &linear_acceleration, const Vector3d &angular_velocity, const bool is_static)
 {
     if (!first_imu)
     {
+
         first_imu = true;
         acc_0 = linear_acceleration;
         gyr_0 = angular_velocity;
@@ -101,6 +104,7 @@ void Estimator::processIMU(double dt, const Vector3d &linear_acceleration, const
     }
     if (frame_count != 0)
     {
+        //pre_integrations[frame_count]->push_back(dt, linear_acceleration, angular_velocity)
         pre_integrations[frame_count]->push_back(dt, linear_acceleration, angular_velocity);
         //if(solver_flag != NON_LINEAR)
             tmp_pre_integration->push_back(dt, linear_acceleration, angular_velocity);
@@ -117,6 +121,24 @@ void Estimator::processIMU(double dt, const Vector3d &linear_acceleration, const
         Vector3d un_acc = 0.5 * (un_acc_0 + un_acc_1);
         Ps[j] += dt * Vs[j] + 0.5 * dt * dt * un_acc;
         Vs[j] += dt * un_acc;
+
+        // 24-10-18 by xinyi ZUPT
+        if (is_static) {
+            ceres::Problem problem;
+
+            ceres::CostFunction* cost_function = new VelocityFusionCost(Eigen::Vector3d::Zero());
+            problem.AddResidualBlock(cost_function, nullptr, Vs[j].data());
+
+
+            ceres::Solver::Options options;
+            options.linear_solver_type = ceres::DENSE_NORMAL_CHOLESKY;
+            options.minimizer_progress_to_stdout = true;
+
+
+            ceres::Solver::Summary summary;
+
+            ceres::Solve(options, &problem, &summary);
+        }
     }
     acc_0 = linear_acceleration;
     gyr_0 = angular_velocity;
@@ -167,13 +189,13 @@ void Estimator::processImage(const map<int, vector<pair<int, Eigen::Matrix<doubl
             bool result = false;
             if( ESTIMATE_EXTRINSIC != 2 && (header.stamp.sec + header.stamp.nanosec*(1e-9) - initial_timestamp) > 0.1)
             {
-                if (!init_odom_timer_)
+                /*if (!init_odom_timer_)
             {
             init_odom_timer_ = node_ ->create_wall_timer(
             std::chrono::milliseconds(50),  // 20Hz
             std::bind(&Estimator::pubinitodom, this)
             );
-            }
+            }*/
                result = initialStructure();
                initial_timestamp = header.stamp.sec + header.stamp.nanosec*(1e-9);
             }
@@ -1162,33 +1184,4 @@ void Estimator::setReloFrame(double _frame_stamp, int _frame_index, vector<Vecto
                 relo_Pose[j] = para_Pose[i][j];
         }
     }
-}
-
-
-void Estimator::pubinitodom()
-{
-    px4_msgs::msg::VehicleOdometry msg{};
-    //msg.timestamp = this->get_clock()->now().nanoseconds() / 1000;
-    msg.timestamp_sample = msg.timestamp;
-    
-    msg.pose_frame = px4_msgs::msg::VehicleOdometry::POSE_FRAME_NED;
-    msg.velocity_frame = px4_msgs::msg::VehicleOdometry::VELOCITY_FRAME_NED;
-    
-
-    msg.position[0] = 0;
-    msg.position[1] = -0;
-    msg.position[2] = -0.15; 
-    
-    msg.q[0] = 1.0;
-    msg.q[1] = 0.0;
-    msg.q[2] = -0.0;
-    msg.q[3] = -0.0;
-    
-    msg.velocity[0] = 0;
-    msg.velocity[1] = -0;
-    msg.velocity[2] = -0;
-    
-    
-    pub_init_odom->publish(msg);
-    RCUTILS_LOG_INFO("Published visual odometry data");
 }

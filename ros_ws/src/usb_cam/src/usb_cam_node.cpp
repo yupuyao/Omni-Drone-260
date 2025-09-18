@@ -35,7 +35,6 @@
 #include "usb_cam/usb_cam_node.hpp"
 #include "usb_cam/utils.hpp"
 #include <condition_variable>
-#include <queue>
 
 const char BASE_TOPIC_NAME[] = "image_raw";
 
@@ -220,11 +219,15 @@ void UsbCamNode::init()
 
   // TODO(lucasw) should this check a little faster than expected frame rate?
   // TODO(lucasw) how to do small than ms, or fractional ms- std::chrono::nanoseconds?
+  
+  /*
   rmw_qos_profile_t qos_profile = rmw_qos_profile_sensor_data;
   auto qos = rclcpp::QoS(rclcpp::QoSInitialization(qos_profile.history, 1), qos_profile);
   trigger_subscription_ = this->create_subscription<px4_msgs::msg::CameraTrigger>(
     "/fmu/out/camera_trigger", qos, std::bind(&UsbCamNode::trigger_callback, this, std::placeholders::_1));
-  RCLCPP_INFO_STREAM(this->get_logger(), "Ready to trigger image capture on topic '/fmu/out/camera_trigger'");
+  RCLCPP_INFO_STREAM(this->get_logger(), "Ready to trigger image capture on topic '/fmu/out/camera_trigger'"); 
+  */
+  
   const int period_ms = 1000.0 / m_parameters.framerate;
   m_timer = this->create_wall_timer(
     std::chrono::milliseconds(static_cast<int64_t>(period_ms)),
@@ -374,7 +377,7 @@ bool UsbCamNode::take_and_send_image()
   if (sizeof(m_image_msg->data) != m_camera->get_image_size_in_bytes()) {
     m_image_msg->width = m_camera->get_image_width();
     m_image_msg->height = m_camera->get_image_height();
-    m_image_msg->encoding = m_camera->get_pixel_format()->ros();
+    m_image_msg->encoding = "rgb8";
     m_image_msg->step = m_camera->get_image_step();
     if (m_image_msg->step == 0) {
       // Some formats don't have a linesize specified by v4l2
@@ -386,8 +389,12 @@ bool UsbCamNode::take_and_send_image()
 
   // grab the image, pass image msg buffer to fill
   m_camera->get_image(reinterpret_cast<char *>(&m_image_msg->data[0]));
-
-  m_image_msg->header.stamp = trigger_time;
+  
+  auto stamp = m_camera->get_image_timestamp();
+  m_image_msg->header.stamp.sec = stamp.tv_sec;
+  m_image_msg->header.stamp.nanosec = stamp.tv_nsec;
+  
+  //m_image_msg->header.stamp = trigger_time;
 
   *m_camera_info_msg = m_camera_info->getCameraInfo();
   m_camera_info_msg->header = m_image_msg->header;
@@ -405,11 +412,15 @@ bool UsbCamNode::take_and_send_image_mjpeg()
 
   // grab the image, pass image msg buffer to fill
   m_camera->get_image(reinterpret_cast<char *>(&m_compressed_img_msg->data[0]));
+  
+  auto stamp = m_camera->get_image_timestamp();
+  m_compressed_img_msg->header.stamp.sec = stamp.tv_sec;
+  m_compressed_img_msg->header.stamp.nanosec = stamp.tv_nsec;
+  
+  //m_compressed_img_msg->header.stamp = trigger_time;
 
-  m_image_msg->header.stamp = trigger_time;
-
-  *m_camera_info_msg = m_camera_info->getCameraInfo();
-  m_camera_info_msg->header = m_compressed_img_msg->header;
+  //*m_camera_info_msg = m_camera_info->getCameraInfo();
+  //m_camera_info_msg->header = m_compressed_img_msg->header;
 
   m_compressed_image_publisher->publish(*m_compressed_img_msg);
   m_compressed_cam_info_publisher->publish(*m_camera_info_msg);

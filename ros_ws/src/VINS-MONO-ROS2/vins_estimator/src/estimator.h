@@ -24,6 +24,34 @@
 #include <opencv2/core/eigen.hpp>
 #include <px4_msgs/msg/vehicle_odometry.hpp>
 
+class VelocityFusionCost : public ceres::CostFunction {
+public:
+    VelocityFusionCost(const Eigen::Vector3d& observed_velocity)
+        : observed_velocity_(observed_velocity) {
+        // 设置残差维度为3，参数块维度为1个3维向量
+        set_num_residuals(3);
+        mutable_parameter_block_sizes()->push_back(3);
+    }
+
+    virtual bool Evaluate(const double* const* parameters, double* residuals, double** jacobians) const override {
+        const double* predicted_velocity = parameters[0];
+
+        residuals[0] = predicted_velocity[0] - observed_velocity_[0];
+        residuals[1] = predicted_velocity[1] - observed_velocity_[1];
+        residuals[2] = predicted_velocity[2] - observed_velocity_[2];
+
+        if (jacobians != nullptr && jacobians[0] != nullptr) {
+            Eigen::Map<Eigen::Matrix<double, 3, 3, Eigen::RowMajor>> jacobian_v(jacobians[0]);
+            jacobian_v.setIdentity();
+        }
+
+        return true;
+    }
+
+private:
+    Eigen::Vector3d observed_velocity_;
+};
+
 class Estimator
 {
   public:
@@ -36,7 +64,7 @@ class Estimator
     std::shared_ptr<rclcpp::Node> node_;
 
     // interface
-    void processIMU(double t, const Vector3d &linear_acceleration, const Vector3d &angular_velocity);
+    void processIMU(double dt, const Vector3d &linear_acceleration, const Vector3d &angular_velocity, const bool is_static);
     void processImage(const map<int, vector<pair<int, Eigen::Matrix<double, 7, 1>>>> &image, const std_msgs::msg::Header &header);
     void setReloFrame(double _frame_stamp, int _frame_index, vector<Vector3d> &_match_points, Vector3d _relo_t, Matrix3d _relo_r);
 
@@ -54,6 +82,7 @@ class Estimator
     void double2vector();
     bool failureDetection();
     void pubinitodom();
+    bool is_static;
 
 
     enum SolverFlag

@@ -12,6 +12,9 @@ sleep 5
 tmux new-window -t $SESSION -n 'camera'
 tmux send-keys "ros2 launch usb_cam camera.launch.py" C-m
 
+tmux new-window -t $SESSION -n 'rgb_convert'
+tmux send-keys "ros2 run yuv2_to_rgb_converter yuv2_to_rgb_converter_cpp" C-m
+
 tmux new-window -t $SESSION -n 'vins'
 tmux send-keys "ros2 launch vins_estimator vins_estimate.launch.py" C-m
 
@@ -29,3 +32,5 @@ tmux new-window -t $SESSION -n 'planner'
 tmux send-keys "ros2 launch ego_planner real_uav.launch.py" C-m
 
 tmux attach-session -t $SESSION
+
+ros2 run waypoint_manager interactive_goal_sender

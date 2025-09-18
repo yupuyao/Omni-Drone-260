@@ -29,8 +29,8 @@ ImuTransformNode::ImuTransformNode(const rclcpp::NodeOptions& options)
     }
     
     // Initialize subscribers
-    sensor_subscription_ = this->create_subscription<px4_msgs::msg::SensorCombined>(
-        "/fmu/out/sensor_combined",
+    sensor_subscription_ = this->create_subscription<px4_msgs::msg::VehicleOpticalFlowVel>(
+        "/fmu/out/vehicle_optical_flow_vel",
         qos,
         std::bind(&ImuTransformNode::sensor_callback, this, std::placeholders::_1)
     );
@@ -44,7 +44,7 @@ ImuTransformNode::ImuTransformNode(const rclcpp::NodeOptions& options)
     RCLCPP_INFO(this->get_logger(), "IMU Transform Node initialized");
 }
 
-void ImuTransformNode::sensor_callback(const px4_msgs::msg::SensorCombined::SharedPtr msg)
+void ImuTransformNode::sensor_callback(const px4_msgs::msg::VehicleOpticalFlowVel::SharedPtr msg)
 {
     {
         std::lock_guard<std::mutex> lock(data_mutex_);

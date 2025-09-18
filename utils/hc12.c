@@ -54,7 +54,7 @@ int main() {
 
  
     char message[128];
-    snprintf(message, sizeof(message), "mission accomplished at %s", timestamp);
+    snprintf(message, sizeof(message), "Team 78 mission accomplished at %s", timestamp);
 
     write(serial_port, message, strlen(message));
 
