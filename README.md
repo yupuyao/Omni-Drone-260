@@ -2,13 +2,13 @@
 
 **Omni-Drone-260** is a UAV autonomy planning project that runs the [EGO-Planner](https://github.com/ZJU-FAST-Lab/ego-planner) entirely within a ROS 2 environment. It integrates XRCE-DDS communication to interface with both PX4 flight controller and the K230 platform with different task supporting.
 
-**Update：** Official PX4 image support is provided, with the safety warning that previously required a ground station for takeoff removed, allowing flight without a ground station.
+**Update：** Official PX4 source support is provided, with the safety warning that previously required a ground station for takeoff removed, allowing flight without a ground station.
 
-**Note:** This repository uses a monocular camera for localization, so obstacle avoidance relies on metric 3D depth estimation and synchronizes with VINS-Mono via hardware trigger. If you are using a stereo camera, please modify the topic subscriptions accordingly and you can ignore the USB cam-related parts.
+**Note:** This repository uses a monocular camera for localization, so obstacle avoidance relies on metric 3D depth estimation and synchronizes with camera and imu via hardware trigger. If you are using a stereo camera, please modify the topic subscriptions accordingly and you can ignore the usb_cam related parts.
 
 ## ✨ Features
 
-- Fully ROS 2-based UAV autonomy system
+- A fully ROS 2 Humble-based UAV autonomy system on Ubuntu 22.04
 - Real-time 3D trajectory planning with EGO-Planner
 - Supports depth estimation for a monocular camera using metric 3D
 - Lightweight XRCE-DDS communication with PX4 and K230
